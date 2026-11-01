@@ -280,29 +280,35 @@ jQuery(() => {
     function updateTopButtonsLayout() {
         const isMobile = window.innerWidth <= 768;
         const baseLeft = isMobile ? 6 : 12;
-        const gap = isMobile ? 6 : 6;
+        const gap = 6;
 
         const wContainer = document.getElementById('st-weather-buttons-container');
         const wBtn = document.getElementById('btn-weather-toggle-menu');
         const sContainer = document.getElementById('st-sound-buttons-container');
         const sBtn = document.getElementById('btn-sound-toggle-menu');
 
-        const wVisible = !!(wContainer && $(wContainer).is(':visible'));
-        const sVisible = !!(sContainer && $(sContainer).is(':visible'));
+        const wVisible = !!(wContainer && $(wContainer).is(':visible') && wContainer.getBoundingClientRect().width > 0);
+        const sVisible = !!(sContainer && $(sContainer).is(':visible') && sContainer.getBoundingClientRect().width > 0);
 
         let currentLeft = baseLeft;
 
         // 1. Если Погода видима — учитываем её ширину
         if (wVisible) {
-            const wRef = isMobile && wBtn ? wBtn : wContainer;
-            currentLeft = Math.round(wRef.getBoundingClientRect().right + gap);
+            const wRef = (isMobile && wBtn) ? wBtn : wContainer;
+            const rect = wRef.getBoundingClientRect();
+            if (rect.width > 0) {
+                currentLeft = Math.round(currentLeft + rect.width + gap);
+            }
         }
 
         // 2. Если Звук видим — ставим его сразу после Погоды (или на 1-е место, если Погоды нет!)
         if (sVisible) {
             $(sContainer).css('left', `${currentLeft}px`);
-            const sRef = isMobile && sBtn ? sBtn : sContainer;
-            currentLeft = Math.round(sRef.getBoundingClientRect().right + gap);
+            const sRef = (isMobile && sBtn) ? sBtn : sContainer;
+            const rect = sRef.getBoundingClientRect();
+            if (rect.width > 0) {
+                currentLeft = Math.round(currentLeft + rect.width + gap);
+            }
         }
 
         // 3. Ставим кнопку Таро 🃏 вплотную следом без единого лишнего пробела!
@@ -359,7 +365,6 @@ jQuery(() => {
             if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
                 const ctx = SillyTavern.getContext();
                 if (ctx && typeof ctx.setExtensionPrompt === 'function') {
-                    // Последняя 1 = отправка от роли USER!
                     ctx.setExtensionPrompt(EXTENSION_PROMPT_ID, promptText, 1, 0, false, 1);
                 }
             }
@@ -420,7 +425,7 @@ jQuery(() => {
             return prefix + instruction;
         });
 
-       return `[OOC Narrative Direction — Fate Twist: Seamlessly weave the following subtle plot development or emotional shift into this response without mentioning Tarot or cards explicitly: ${parts.join(' Combined with: ')}]`;
+        return `[OOC Narrative Direction — Fate Twist: Seamlessly weave the following subtle plot development or emotional shift into this response without mentioning Tarot or cards explicitly: ${parts.join(' Combined with: ')}]`;
     }
 
     function formatReadingHTML(cardsArray) {
@@ -573,3 +578,138 @@ jQuery(() => {
 
     window.addEventListener('pointerdown', (e) => {
         if (e.target && (e.target.id === 'send_but' || e.target.closest('#send_but'))) {
+            onBeforeUserSendMessage();
+        }
+    }, true);
+
+    window.addEventListener('keydown', (e) => {
+        if (e.target && e.target.id === 'send_textarea' && e.key === 'Enter' && !e.shiftKey) {
+            onBeforeUserSendMessage();
+        }
+    }, true);
+
+    const attachSTEvents = setInterval(() => {
+        try {
+            if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
+                const ctx = SillyTavern.getContext();
+                if (ctx && ctx.eventSource && ctx.event_types) {
+                    clearInterval(attachSTEvents);
+                    const ev = ctx.event_types;
+                    if (ev.GENERATION_ENDED) {
+                        ctx.eventSource.on(ev.GENERATION_ENDED, () => {
+                            if (queuedPrompt) clearFatePrompt();
+                        });
+                    }
+                    if (ev.GENERATION_STOPPED) {
+                        ctx.eventSource.on(ev.GENERATION_STOPPED, () => {
+                            if (queuedPrompt) clearFatePrompt();
+                        });
+                    }
+                }
+            }
+        } catch (e) {}
+    }, 1000);
+
+    // ================= ОБРАБОТЧИКИ КНОПОК И ГАЛОЧЕК =================
+    $('#btn-tarot-open').on('click', () => {
+        if (currentDrawnCards.length === 0) {
+            startNewSpread(spreadCount, false);
+        }
+        $('#st-tarot-modal-overlay').addClass('open');
+    });
+
+    $('#st-tarot-close, #st-tarot-modal-overlay').on('click', function(e) {
+        if (e.target === this) {
+            $('#st-tarot-modal-overlay').removeClass('open');
+        }
+    });
+
+    $('.st-tarot-mode-btn').on('click', function() {
+        $('.st-tarot-mode-btn').removeClass('active');
+        $(this).addClass('active');
+        const count = parseInt($(this).data('count'), 10);
+        startNewSpread(count, false);
+    });
+
+    $('#btn-tarot-draw-new').on('click', () => {
+        clearFatePrompt();
+        startNewSpread(spreadCount, true);
+    });
+
+    $('#btn-tarot-weave').on('click', () => {
+        currentDrawnCards.forEach(c => c.flipped = true);
+        $('.st-tarot-card-slot').addClass('flipped');
+        updateReadingBox();
+
+        const directive = buildHiddenDirective(currentDrawnCards);
+        setQueuedFatePrompt(directive);
+        $('#st-tarot-modal-overlay').removeClass('open');
+        showCinematicCardsPopup(currentDrawnCards);
+    });
+
+    $('#btn-tarot-clear').on('click', () => {
+        clearFatePrompt();
+    });
+
+    $('#st-tarot-ext-enabled').on('change', function() {
+        extensionEnabled = $(this).is(':checked');
+        localStorage.setItem('st_tarot_enabled', extensionEnabled);
+        syncSettingsUI();
+    });
+
+    $('.st-tarot-auto-master').on('change', function() {
+        autoFateEnabled = $(this).is(':checked');
+        localStorage.setItem('st_tarot_auto', autoFateEnabled);
+        if (!autoFateEnabled) clearFatePrompt();
+        syncSettingsUI();
+    });
+
+    $('#st-tarot-chance-slider').on('input', function() {
+        autoFateChance = parseInt($(this).val(), 10);
+        localStorage.setItem('st_tarot_chance', autoFateChance);
+        $('#st-tarot-chance-label').text(`${autoFateChance}%`);
+    });
+
+    function updateIndividualAutoModes() {
+        if (!autoMode1 && !autoMode2 && !autoMode3) {
+            autoMode1 = true;
+        }
+        autoModeAll = (autoMode1 && autoMode2 && autoMode3);
+        saveAutoModes();
+        syncSettingsUI();
+    }
+
+    $('.st-tarot-auto-m1').on('change', function() {
+        autoMode1 = $(this).is(':checked');
+        updateIndividualAutoModes();
+    });
+
+    $('.st-tarot-auto-m2').on('change', function() {
+        autoMode2 = $(this).is(':checked');
+        updateIndividualAutoModes();
+    });
+
+    $('.st-tarot-auto-m3').on('change', function() {
+        autoMode3 = $(this).is(':checked');
+        updateIndividualAutoModes();
+    });
+
+    $('.st-tarot-auto-mall').on('change', function() {
+        autoModeAll = $(this).is(':checked');
+        if (autoModeAll) {
+            autoMode1 = true;
+            autoMode2 = true;
+            autoMode3 = true;
+        } else {
+            autoMode1 = true;
+            autoMode2 = false;
+            autoMode3 = false;
+        }
+        saveAutoModes();
+        syncSettingsUI();
+    });
+
+    syncSettingsUI();
+    startNewSpread(1, false);
+});
+// === КОНЕЦ ФАЙЛА ===
