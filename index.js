@@ -162,7 +162,7 @@ jQuery(() => {
     // ================= 1. ВСТРАИВАЕМ UI В SILLYTAVERN =================
     const tarotHTML = `
         <div id="st-tarot-button-container" class="st-tarot-button-container">
-            <button id="btn-tarot-open" class="toggleTarot" title="Мистическая колода Таро (Arcana Fate Deck)">🃏</button>
+            <button id="btn-tarot-open" class="toggleTarot" title="Arcana Fate Deck)"></button>
         </div>
 
         <div id="st-tarot-modal-overlay" class="st-tarot-modal-overlay">
