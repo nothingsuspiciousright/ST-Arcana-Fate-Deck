@@ -338,7 +338,7 @@ jQuery(() => {
             if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
                 const ctx = SillyTavern.getContext();
                 if (ctx && typeof ctx.setExtensionPrompt === 'function') {
-                    ctx.setExtensionPrompt(EXTENSION_PROMPT_ID, promptText, 1, 0, false, 0);
+                    ctx.setExtensionPrompt(EXTENSION_PROMPT_ID, promptText, 1, 0, false, 1);
                 }
             }
         } catch (e) {
@@ -398,7 +398,7 @@ jQuery(() => {
             return prefix + instruction;
         });
 
-        return `[System Narrative Direction — Fate Twist: Seamlessly weave the following subtle plot development or emotional shift into this response without mentioning Tarot or cards explicitly: ${parts.join(' Combined with: ')}]`;
+        return `[OOC Narrative Direction — Fate Twist: Seamlessly weave the following subtle plot development or emotional shift into this response without mentioning Tarot or cards explicitly: ${parts.join(' Combined with: ')}]`;
     }
 
     function formatReadingHTML(cardsArray) {
@@ -467,11 +467,12 @@ jQuery(() => {
 
     // ================= КИНЕМАТОГРАФИЧНЫЙ ВЫЛЕТ 3D-КАРТ НА ЭКРАН =================
     let popupTimeout = null;
+    let canDismissPopup = false;
+
     function showCinematicCardsPopup(cardsArray) {
         const container = $('#st-tarot-cinematic-cards');
         container.empty();
 
-        // Сперва создаём карты рубашкой вверх, чтобы они перевернулись прямо на глазах!
         const cardEls = cardsArray.map((item) => {
             const el = createCardElement(item, false);
             container.append(el);
@@ -479,9 +480,18 @@ jQuery(() => {
         });
 
         $('#st-tarot-cinematic-reading').html(formatReadingHTML(cardsArray));
-        $('#st-tarot-cinematic-popup').addClass('show');
 
-        // Каскадный 3D-переворот каждой карты (с интервалом 220мс)
+        // Первые 400мс окно прозрачно для кликов, чтобы никогда не перехватывать нажатие на кнопку отправки!
+        canDismissPopup = false;
+        const popupEl = $('#st-tarot-cinematic-popup');
+        popupEl.css('pointer-events', 'none').addClass('show');
+
+        setTimeout(() => {
+            canDismissPopup = true;
+            popupEl.css('pointer-events', 'auto');
+        }, 450);
+
+        // Каскадный 3D-переворот каждой карты
         cardEls.forEach((el, idx) => {
             setTimeout(() => {
                 el.addClass('flipped');
@@ -490,14 +500,15 @@ jQuery(() => {
 
         clearTimeout(popupTimeout);
         popupTimeout = setTimeout(() => {
-            $('#st-tarot-cinematic-popup').removeClass('show');
+            popupEl.removeClass('show').css('pointer-events', 'none');
         }, 6200);
     }
 
-    // Клик по всплывшему оверлею сразу закрывает его
+    // Клик по всплывшему оверлею закрывает его
     $('#st-tarot-cinematic-popup').on('click', function() {
+        if (!canDismissPopup) return;
         clearTimeout(popupTimeout);
-        $(this).removeClass('show');
+        $(this).removeClass('show').css('pointer-events', 'none');
     });
 
     // ================= ПЕРЕХВАТ ОТПРАВКИ СООБЩЕНИЯ В ПОСЛЕДНИЙ МОМЕНТ =================
@@ -517,6 +528,10 @@ jQuery(() => {
     function onBeforeUserSendMessage() {
         if (!extensionEnabled) return;
 
+        // Проверяем, что поле ввода не пустое
+        const textVal = $('#send_textarea').val();
+        if (!textVal || !String(textVal).trim()) return;
+
         // Если юзер уже сам вручную зарядил карту на этот ход — оставляем её!
         if (queuedPrompt) return;
 
@@ -531,11 +546,14 @@ jQuery(() => {
             $(`.st-tarot-mode-btn[data-count="${count}"]`).addClass('active');
             renderStage(true);
 
+            // 1. Мгновенно вкладываем скрытый промпт ДО отправки сообщения:
             const hiddenPrompt = buildHiddenDirective(autoCards);
             setQueuedFatePrompt(hiddenPrompt);
 
-            // Выбрасываем 3D-карты прямо на экран с каскадным переворотом!
-            showCinematicCardsPopup(autoCards);
+            // 2. А 3D-карты показываем ПОСТФАКТУМ (через 300мс, когда сообщение уже улетело в чат!):
+            setTimeout(() => {
+                showCinematicCardsPopup(autoCards);
+            }, 300);
         }
     }
 
