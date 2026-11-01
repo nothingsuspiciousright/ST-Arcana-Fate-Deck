@@ -448,7 +448,7 @@ jQuery(() => {
         return $(`
             <div class="st-tarot-card-slot ${startFlipped ? 'flipped' : ''}">
                 <div class="st-tarot-card-face st-tarot-card-back">
-                    <div class="st-tarot-back-motif">✧<br>☽ ❀ ☾<br>✧</div>
+                    <div class="st-tarot-back-motif">✧<br>☽ ❅ ☾<br>✧</div>
                     <div class="st-tarot-back-hint">Судьба</div>
                 </div>
                 <div class="st-tarot-card-face st-tarot-card-front ${item.reversed ? 'is-reversed' : ''}">
