@@ -4,10 +4,10 @@
     align-items: center;
     position: fixed;
     top: 4px;
-    left: 76px;
+    left: 12px; /* Автоматически рассчитывается скриптом без пробелов! */
     z-index: 9998;
     pointer-events: none;
-    transition: left 0.35s ease;
+    transition: left 0.25s ease;
 }
 
 .toggleTarot {
@@ -49,19 +49,24 @@
 
 /* ================= МОДАЛЬНОЕ ОКНО АРКАНОВ ТАРО ================= */
 .st-tarot-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 10005;
-    background: rgba(5, 6, 10, 0.65);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 10005 !important;
+    background: rgba(5, 6, 10, 0.68);
     backdrop-filter: blur(6px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.25s ease, visibility 0.25s ease;
-    padding: 12px;
-    box-sizing: border-box;
+    padding: 10px;
+    margin: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .st-tarot-modal-overlay.open {
@@ -72,14 +77,17 @@
 .st-tarot-window {
     position: relative;
     width: 100%;
-    max-width: 620px;
-    max-height: 92vh;
+    max-width: 600px;
+    max-height: 90vh;
+    max-height: 90dvh;
     overflow-y: auto;
+    overflow-x: hidden;
     background: linear-gradient(165deg, rgba(24, 26, 34, 0.96) 0%, rgba(12, 13, 18, 0.98) 100%);
     border: 1px solid rgba(255, 255, 255, 0.32);
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(255, 255, 255, 0.12);
-    padding: 20px 22px;
+    padding: 18px 20px;
+    margin: 0 auto;
     color: #e2e6ed;
     font-family: serif;
     box-sizing: border-box;
@@ -90,12 +98,12 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    padding-bottom: 10px;
-    margin-bottom: 14px;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .st-tarot-title {
-    font-size: 17px;
+    font-size: 16px;
     letter-spacing: 2px;
     color: #f0f4f8;
     text-shadow: 0 0 8px rgba(255, 255, 255, 0.45);
@@ -120,7 +128,7 @@
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     flex-wrap: wrap;
 }
 
@@ -129,10 +137,10 @@
     border: 1px solid rgba(255, 255, 255, 0.22);
     border-radius: 20px;
     color: #cfd6e0;
-    padding: 5px 14px;
+    padding: 5px 13px;
     font-size: 12.5px;
     font-family: serif;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -150,25 +158,26 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 16px;
-    margin: 10px 0 22px 0;
+    gap: 14px;
+    margin: 8px 0 18px 0;
     perspective: 1100px;
-    min-height: 236px;
-    flex-wrap: wrap;
+    min-height: 224px;
+    flex-wrap: nowrap;
 }
 
 .st-tarot-card-slot {
-    width: 146px;
-    height: 228px;
+    width: 142px;
+    height: 222px;
     position: relative;
     cursor: pointer;
     user-select: none;
+    flex-shrink: 0;
     transform-style: preserve-3d;
     transition: transform 0.75s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .st-tarot-card-slot:hover {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
 }
 
 .st-tarot-card-slot.flipped {
@@ -176,7 +185,7 @@
 }
 
 .st-tarot-card-slot.flipped:hover {
-    transform: rotateY(180deg) translateY(-5px);
+    transform: rotateY(180deg) translateY(-4px);
 }
 
 .st-tarot-card-face {
@@ -190,13 +199,13 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 10px;
+    padding: 14px 8px;
     background: radial-gradient(circle at 50% 35%, rgba(38, 42, 56, 0.96) 0%, rgba(14, 15, 22, 0.99) 100%);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8), 0 0 14px rgba(255, 255, 255, 0.12);
     overflow: hidden;
 }
 
-/* Наша фирменная серебряная филигранная рамка Таро поверх обеих сторон карты! */
+/* Серебряная филигранная рамка Таро поверх обеих сторон карты */
 .st-tarot-card-face::after {
     content: "";
     position: absolute;
@@ -215,7 +224,7 @@
 }
 
 .st-tarot-back-motif {
-    font-size: 34px;
+    font-size: 32px;
     color: rgba(235, 242, 252, 0.75);
     text-shadow: 0 0 12px rgba(255, 255, 255, 0.45);
     letter-spacing: 2px;
@@ -225,8 +234,8 @@
 
 .st-tarot-back-hint {
     position: absolute;
-    bottom: 18px;
-    font-size: 10.5px;
+    bottom: 16px;
+    font-size: 10px;
     color: rgba(255, 255, 255, 0.45);
     letter-spacing: 1px;
 }
@@ -235,20 +244,20 @@
 .st-tarot-card-front {
     transform: rotateY(180deg);
     text-align: center;
-    padding: 16px 12px 15px 12px;
+    padding: 14px 8px 14px 8px;
 }
 
 .st-tarot-roman {
-    font-size: 12px;
+    font-size: 11.5px;
     letter-spacing: 2px;
     color: rgba(235, 240, 248, 0.8);
     margin-top: 2px;
 }
 
 .st-tarot-art-glyph {
-    font-size: 46px;
+    font-size: 42px;
     line-height: 1;
-    margin: 8px 0;
+    margin: 6px 0;
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
     transition: transform 0.3s ease;
 }
@@ -258,16 +267,16 @@
 }
 
 .st-tarot-card-name {
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: bold;
     color: #fff;
-    letter-spacing: 0.6px;
-    line-height: 1.2;
+    letter-spacing: 0.4px;
+    line-height: 1.15;
     text-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
 }
 
 .st-tarot-card-orientation {
-    font-size: 10px;
+    font-size: 9.5px;
     color: rgba(210, 220, 235, 0.72);
     margin-top: 2px;
 }
@@ -278,22 +287,23 @@
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.42);
     border-radius: 12px;
-    padding: 15px 16px;
-    margin: 20px 0 16px 0;
+    padding: 14px 15px;
+    margin: 18px 0 14px 0;
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.14);
     text-align: left;
-    font-size: 13px;
-    line-height: 1.45;
+    font-size: 12.5px;
+    line-height: 1.4;
     color: #e0e4ec;
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.35);
+    box-sizing: border-box;
 }
 
 .st-tarot-reading-box::before,
 .st-tarot-reading-box::after {
     content: '✦ ✦ ✦';
     position: absolute;
-    font-size: 18px;
-    letter-spacing: 9px;
+    font-size: 17px;
+    letter-spacing: 8px;
     color: rgba(255, 255, 255, 0.68);
     text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
     pointer-events: none;
@@ -307,9 +317,9 @@
 .st-tarot-actions {
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .st-tarot-btn {
@@ -317,10 +327,10 @@
     border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: 10px;
     color: #f0f4f8;
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 7px 14px;
+    font-size: 12.5px;
     font-family: serif;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -344,11 +354,11 @@
 /* Нижняя панель быстрых настроек Авто-Судьбы внутри окна */
 .st-tarot-footer-controls {
     border-top: 1px solid rgba(255, 255, 255, 0.12);
-    padding-top: 12px;
+    padding-top: 10px;
     display: flex;
     flex-direction: column;
     gap: 8px;
-    font-size: 12.5px;
+    font-size: 12px;
     color: #c5ccd6;
 }
 
@@ -356,44 +366,55 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
+}
+
+.st-tarot-auto-modes-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px 10px;
+    margin-top: 2px;
 }
 
 /* ================= КИНЕМАТОГРАФИЧНЫЙ ВЫЛЕТ 3D-КАРТ НА ЭКРАН ПРИ АВТО-СУДЬБЕ ================= */
 .st-tarot-cinematic-popup {
-    position: fixed;
-    inset: 0;
-    z-index: 10004;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: radial-gradient(circle at center, rgba(10, 12, 18, 0.72) 0%, rgba(5, 6, 10, 0.25) 70%, transparent 100%);
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 10004 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: radial-gradient(circle at center, rgba(10, 12, 18, 0.75) 0%, rgba(5, 6, 10, 0.3) 70%, transparent 100%);
     backdrop-filter: blur(3px);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: scale(0.92) translateY(18px);
+    transform: scale(0.92) translateY(15px);
     transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.4s ease;
-    padding: 16px;
-    box-sizing: border-box;
+    padding: 12px;
+    margin: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .st-tarot-cinematic-popup.show {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto; /* Клик в любое место сразу закроет всплывшие карты, если нужно */
     transform: scale(1) translateY(0);
 }
 
 .st-tarot-cinematic-banner {
     font-family: serif;
-    font-size: 15px;
-    letter-spacing: 3px;
+    font-size: 14px;
+    letter-spacing: 2.5px;
     color: #ffffff;
     text-shadow: 0 0 12px rgba(255, 255, 255, 0.75), 0 0 24px rgba(255, 255, 255, 0.4);
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     text-align: center;
 }
 
@@ -401,49 +422,146 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     perspective: 1100px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
+    margin-bottom: 14px;
+    flex-wrap: nowrap;
 }
 
 .st-tarot-cinematic-reading {
-    max-width: 520px;
+    max-width: 500px;
     width: 100%;
     background: rgba(16, 18, 24, 0.92) !important;
     backdrop-filter: blur(8px);
-    margin: 8px 0 0 0 !important;
+    margin: 6px 0 0 0 !important;
 }
 
 .st-tarot-cinematic-hint {
-    margin-top: 10px;
+    margin-top: 8px;
     font-family: serif;
     font-size: 11px;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.45);
 }
 
-/* Мобильная адаптация */
-@media (max-width: 768px) {
+/* ================= ПОЛНАЯ АДАПТАЦИЯ ПОД МОБИЛЬНЫЕ ТЕЛЕФОНЫ ================= */
+@media screen and (max-width: 768px) {
     .st-tarot-button-container {
         top: 44px;
-        left: 70px;
     }
 
-    .st-tarot-card-slot {
-        width: 104px;
-        height: 164px;
-    }
-
-    .st-tarot-art-glyph {
-        font-size: 32px;
-    }
-
-    .st-tarot-card-name {
-        font-size: 10.5px;
+    .st-tarot-modal-overlay {
+        padding: 6px !important;
     }
 
     .st-tarot-window {
-        padding: 15px 14px;
+        width: calc(100vw - 12px) !important;
+        max-width: calc(100vw - 12px) !important;
+        max-height: 86dvh !important;
+        padding: 12px 10px !important;
+        border-radius: 14px !important;
+    }
+
+    .st-tarot-header {
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+    }
+
+    .st-tarot-title {
+        font-size: 14px;
+        letter-spacing: 1.2px;
+    }
+
+    .st-tarot-spread-bar {
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+
+    .st-tarot-mode-btn {
+        padding: 4px 9px;
+        font-size: 11px;
+    }
+
+    /* Все 3 карты в Триплете на телефоне помещаются в 1 ряд без переноса! */
+    .st-tarot-cards-stage,
+    .st-tarot-cinematic-cards {
+        gap: 7px !important;
+        min-height: 150px !important;
+        margin: 4px 0 12px 0 !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .st-tarot-card-slot {
+        width: 92px !important;
+        height: 146px !important;
+    }
+
+    .st-tarot-card-face {
+        padding: 9px 4px !important;
+        border-radius: 7px !important;
+    }
+
+    .st-tarot-back-motif {
+        font-size: 20px !important;
+    }
+
+    .st-tarot-back-hint {
+        bottom: 9px !important;
+        font-size: 8.5px !important;
+    }
+
+    .st-tarot-roman {
+        font-size: 9.5px !important;
+    }
+
+    .st-tarot-art-glyph {
+        font-size: 26px !important;
+        margin: 2px 0 !important;
+    }
+
+    .st-tarot-card-name {
+        font-size: 9.5px !important;
+        line-height: 1.1 !important;
+    }
+
+    .st-tarot-card-orientation {
+        font-size: 8px !important;
+    }
+
+    .st-tarot-reading-box {
+        padding: 11px 11px !important;
+        margin: 12px 0 10px 0 !important;
+        font-size: 11.5px !important;
+        line-height: 1.32 !important;
+    }
+
+    .st-tarot-reading-box::before,
+    .st-tarot-reading-box::after {
+        font-size: 14px !important;
+        letter-spacing: 6px !important;
+    }
+
+    .st-tarot-reading-box::before { top: -8px !important; left: 10px !important; }
+    .st-tarot-reading-box::after  { bottom: -8px !important; right: 10px !important; }
+
+    .st-tarot-btn {
+        padding: 6px 10px !important;
+        font-size: 11.5px !important;
+    }
+
+    .st-tarot-footer-controls {
+        font-size: 11px !important;
+        gap: 6px !important;
+        padding-top: 8px !important;
+    }
+
+    .st-tarot-auto-modes-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px 6px;
+    }
+
+    .st-tarot-cinematic-banner {
+        font-size: 12.5px !important;
+        letter-spacing: 1.5px !important;
     }
 }
