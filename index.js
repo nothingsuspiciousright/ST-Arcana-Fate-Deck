@@ -162,7 +162,7 @@ jQuery(() => {
     // ================= 1. ВСТРАИВАЕМ UI В SILLYTAVERN =================
     const tarotHTML = `
         <div id="st-tarot-button-container" class="st-tarot-button-container">
-            <button id="btn-tarot-open" class="toggleTarot" title="Arcana Fate Deck)">🃏</button>
+            <button id="btn-tarot-open" class="toggleTarot" title="Мистическая колода Таро (Arcana Fate Deck)">🃏</button>
         </div>
 
         <div id="st-tarot-modal-overlay" class="st-tarot-modal-overlay">
@@ -194,14 +194,14 @@ jQuery(() => {
                     <div class="st-tarot-ControlRow">
                         <label style="cursor:pointer; display:flex; align-items:center; gap:6px;">
                             <input class="st-tarot-auto-master" type="checkbox" />
-                            <span><b>🎲 Включить Авто-Судьбу</b> (выскакивают карты при отправке сообщений)</span>
+                            <span><b>🎲 Включить Авто-Судьбу</b> (выскакивают карты при отправке)</span>
                         </label>
                     </div>
                     <div class="st-tarot-ControlRow">
                         <span>Шанс срабатывания на ход: <b id="st-tarot-chance-label">25%</b></span>
-                        <input id="st-tarot-chance-slider" type="range" min="5" max="100" step="5" value="25" style="width:140px;" />
+                        <input id="st-tarot-chance-slider" type="range" min="5" max="100" step="5" value="25" style="width:130px;" />
                     </div>
-                    <div class="st-tarot-ControlRow" style="justify-content:flex-start; gap:14px; margin-top:4px;">
+                    <div class="st-tarot-auto-modes-grid">
                         <label style="cursor:pointer; display:flex; align-items:center; gap:5px;">
                             <input class="st-tarot-auto-m1" type="checkbox" />
                             <span>🃏 Авто: 1 карта</span>
@@ -276,21 +276,41 @@ jQuery(() => {
 
     $('#extensions_settings').append(settingsHTML);
 
-    // Автоматический сдвиг кнопки 🃏, если соседние панели 🌤️ или 🎧 развёрнуты
-    setInterval(() => {
-        const wContainer = document.getElementById('st-weather-buttons-container');
-        const sContainer = document.getElementById('st-sound-buttons-container');
-        if (window.innerWidth <= 768) return;
+    // ================= УМНАЯ СЦЕПКА КНОПОК БЕЗ ПРОБЕЛОВ (ПК + МОБИЛКИ) =================
+    function updateTopButtonsLayout() {
+        const isMobile = window.innerWidth <= 768;
+        const baseLeft = isMobile ? 6 : 12;
+        const gap = isMobile ? 6 : 6;
 
-        let rightEdge = 12;
-        if (wContainer && wContainer.offsetParent !== null) {
-            rightEdge = Math.max(rightEdge, wContainer.getBoundingClientRect().right + 6);
+        const wContainer = document.getElementById('st-weather-buttons-container');
+        const wBtn = document.getElementById('btn-weather-toggle-menu');
+        const sContainer = document.getElementById('st-sound-buttons-container');
+        const sBtn = document.getElementById('btn-sound-toggle-menu');
+
+        const wVisible = !!(wContainer && $(wContainer).is(':visible'));
+        const sVisible = !!(sContainer && $(sContainer).is(':visible'));
+
+        let currentLeft = baseLeft;
+
+        // 1. Если Погода видима — учитываем её ширину
+        if (wVisible) {
+            const wRef = isMobile && wBtn ? wBtn : wContainer;
+            currentLeft = Math.round(wRef.getBoundingClientRect().right + gap);
         }
-        if (sContainer && sContainer.offsetParent !== null) {
-            rightEdge = Math.max(rightEdge, sContainer.getBoundingClientRect().right + 6);
+
+        // 2. Если Звук видим — ставим его сразу после Погоды (или на 1-е место, если Погоды нет!)
+        if (sVisible) {
+            $(sContainer).css('left', `${currentLeft}px`);
+            const sRef = isMobile && sBtn ? sBtn : sContainer;
+            currentLeft = Math.round(sRef.getBoundingClientRect().right + gap);
         }
-        $('#st-tarot-button-container').css('left', `${rightEdge}px`);
-    }, 200);
+
+        // 3. Ставим кнопку Таро 🃏 вплотную следом без единого лишнего пробела!
+        $('#st-tarot-button-container').css('left', `${currentLeft}px`);
+    }
+
+    setInterval(updateTopButtonsLayout, 200);
+    window.addEventListener('resize', updateTopButtonsLayout);
 
     // ================= СОСТОЯНИЕ И НАСТРОЙКИ =================
     let extensionEnabled = localStorage.getItem('st_tarot_enabled') !== 'false';
@@ -330,14 +350,16 @@ jQuery(() => {
             clearFatePrompt();
             $('#st-tarot-button-container').hide();
         }
+        updateTopButtonsLayout();
     }
 
-    // ================= СКРЫТАЯ ИНЪЕКЦИЯ В ПРОМПТ SILLYTAVERN =================
+    // ================= СКРЫТАЯ ИНЪЕКЦИЯ В ПРОМПТ SILLYTAVERN (ОТ ИМЕНИ USER = 1) =================
     function applyExtensionPromptToST(promptText) {
         try {
             if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
                 const ctx = SillyTavern.getContext();
                 if (ctx && typeof ctx.setExtensionPrompt === 'function') {
+                    // Последняя 1 = отправка от роли USER!
                     ctx.setExtensionPrompt(EXTENSION_PROMPT_ID, promptText, 1, 0, false, 1);
                 }
             }
@@ -398,7 +420,7 @@ jQuery(() => {
             return prefix + instruction;
         });
 
-        return `[OOC Narrative Direction — Fate Twist: Seamlessly weave the following subtle plot development or emotional shift into this response without mentioning Tarot or cards explicitly: ${parts.join(' Combined with: ')}]`;
+       return `[OOC Narrative Direction — Fate Twist: Seamlessly weave the following subtle plot development or emotional shift into this response without mentioning Tarot or cards explicitly: ${parts.join(' Combined with: ')}]`;
     }
 
     function formatReadingHTML(cardsArray) {
@@ -426,7 +448,7 @@ jQuery(() => {
         return $(`
             <div class="st-tarot-card-slot ${startFlipped ? 'flipped' : ''}">
                 <div class="st-tarot-card-face st-tarot-card-back">
-                    <div class="st-tarot-back-motif">✧<br>☽ ❅ ☾<br>✧</div>
+                    <div class="st-tarot-back-motif">✧<br>☽ ❀ ☾<br>✧</div>
                     <div class="st-tarot-back-hint">Судьба</div>
                 </div>
                 <div class="st-tarot-card-face st-tarot-card-front ${item.reversed ? 'is-reversed' : ''}">
@@ -481,7 +503,6 @@ jQuery(() => {
 
         $('#st-tarot-cinematic-reading').html(formatReadingHTML(cardsArray));
 
-        // Первые 400мс окно прозрачно для кликов, чтобы никогда не перехватывать нажатие на кнопку отправки!
         canDismissPopup = false;
         const popupEl = $('#st-tarot-cinematic-popup');
         popupEl.css('pointer-events', 'none').addClass('show');
@@ -491,7 +512,6 @@ jQuery(() => {
             popupEl.css('pointer-events', 'auto');
         }, 450);
 
-        // Каскадный 3D-переворот каждой карты
         cardEls.forEach((el, idx) => {
             setTimeout(() => {
                 el.addClass('flipped');
@@ -504,7 +524,6 @@ jQuery(() => {
         }, 6200);
     }
 
-    // Клик по всплывшему оверлею закрывает его
     $('#st-tarot-cinematic-popup').on('click', function() {
         if (!canDismissPopup) return;
         clearTimeout(popupTimeout);
@@ -528,14 +547,11 @@ jQuery(() => {
     function onBeforeUserSendMessage() {
         if (!extensionEnabled) return;
 
-        // Проверяем, что поле ввода не пустое
         const textVal = $('#send_textarea').val();
         if (!textVal || !String(textVal).trim()) return;
 
-        // Если юзер уже сам вручную зарядил карту на этот ход — оставляем её!
         if (queuedPrompt) return;
 
-        // Иначе, если включена Авто-Судьба — бросаем кубик!
         if (autoFateEnabled && Math.random() * 100 < autoFateChance) {
             const count = getRandomAllowedAutoCount();
             const autoCards = drawRandomCards(count);
@@ -546,11 +562,9 @@ jQuery(() => {
             $(`.st-tarot-mode-btn[data-count="${count}"]`).addClass('active');
             renderStage(true);
 
-            // 1. Мгновенно вкладываем скрытый промпт ДО отправки сообщения:
             const hiddenPrompt = buildHiddenDirective(autoCards);
             setQueuedFatePrompt(hiddenPrompt);
 
-            // 2. А 3D-карты показываем ПОСТФАКТУМ (через 300мс, когда сообщение уже улетело в чат!):
             setTimeout(() => {
                 showCinematicCardsPopup(autoCards);
             }, 300);
@@ -559,138 +573,3 @@ jQuery(() => {
 
     window.addEventListener('pointerdown', (e) => {
         if (e.target && (e.target.id === 'send_but' || e.target.closest('#send_but'))) {
-            onBeforeUserSendMessage();
-        }
-    }, true);
-
-    window.addEventListener('keydown', (e) => {
-        if (e.target && e.target.id === 'send_textarea' && e.key === 'Enter' && !e.shiftKey) {
-            onBeforeUserSendMessage();
-        }
-    }, true);
-
-    // Очищаем одноразовый промпт Судьбы после того, как генерация ответа завершилась!
-    const attachSTEvents = setInterval(() => {
-        try {
-            if (typeof SillyTavern !== 'undefined' && SillyTavern.getContext) {
-                const ctx = SillyTavern.getContext();
-                if (ctx && ctx.eventSource && ctx.event_types) {
-                    clearInterval(attachSTEvents);
-                    const ev = ctx.event_types;
-                    if (ev.GENERATION_ENDED) {
-                        ctx.eventSource.on(ev.GENERATION_ENDED, () => {
-                            if (queuedPrompt) clearFatePrompt();
-                        });
-                    }
-                    if (ev.GENERATION_STOPPED) {
-                        ctx.eventSource.on(ev.GENERATION_STOPPED, () => {
-                            if (queuedPrompt) clearFatePrompt();
-                        });
-                    }
-                }
-            }
-        } catch (e) {}
-    }, 1000);
-
-    // ================= ОБРАБОТЧИКИ КНОПОК И ГАЛОЧЕК =================
-    $('#btn-tarot-open').on('click', () => {
-        if (currentDrawnCards.length === 0) {
-            startNewSpread(spreadCount, false);
-        }
-        $('#st-tarot-modal-overlay').addClass('open');
-    });
-
-    $('#st-tarot-close, #st-tarot-modal-overlay').on('click', function(e) {
-        if (e.target === this) {
-            $('#st-tarot-modal-overlay').removeClass('open');
-        }
-    });
-
-    $('.st-tarot-mode-btn').on('click', function() {
-        $('.st-tarot-mode-btn').removeClass('active');
-        $(this).addClass('active');
-        const count = parseInt($(this).data('count'), 10);
-        startNewSpread(count, false);
-    });
-
-    $('#btn-tarot-draw-new').on('click', () => {
-        clearFatePrompt();
-        startNewSpread(spreadCount, true);
-    });
-
-    $('#btn-tarot-weave').on('click', () => {
-        currentDrawnCards.forEach(c => c.flipped = true);
-        $('.st-tarot-card-slot').addClass('flipped');
-        updateReadingBox();
-
-        const directive = buildHiddenDirective(currentDrawnCards);
-        setQueuedFatePrompt(directive);
-        $('#st-tarot-modal-overlay').removeClass('open');
-        showCinematicCardsPopup(currentDrawnCards);
-    });
-
-    $('#btn-tarot-clear').on('click', () => {
-        clearFatePrompt();
-    });
-
-    $('#st-tarot-ext-enabled').on('change', function() {
-        extensionEnabled = $(this).is(':checked');
-        localStorage.setItem('st_tarot_enabled', extensionEnabled);
-        syncSettingsUI();
-    });
-
-    $('.st-tarot-auto-master').on('change', function() {
-        autoFateEnabled = $(this).is(':checked');
-        localStorage.setItem('st_tarot_auto', autoFateEnabled);
-        if (!autoFateEnabled) clearFatePrompt();
-        syncSettingsUI();
-    });
-
-    $('#st-tarot-chance-slider').on('input', function() {
-        autoFateChance = parseInt($(this).val(), 10);
-        localStorage.setItem('st_tarot_chance', autoFateChance);
-        $('#st-tarot-chance-label').text(`${autoFateChance}%`);
-    });
-
-    function updateIndividualAutoModes() {
-        if (!autoMode1 && !autoMode2 && !autoMode3) {
-            autoMode1 = true;
-        }
-        autoModeAll = (autoMode1 && autoMode2 && autoMode3);
-        saveAutoModes();
-        syncSettingsUI();
-    }
-
-    $('.st-tarot-auto-m1').on('change', function() {
-        autoMode1 = $(this).is(':checked');
-        updateIndividualAutoModes();
-    });
-
-    $('.st-tarot-auto-m2').on('change', function() {
-        autoMode2 = $(this).is(':checked');
-        updateIndividualAutoModes();
-    });
-
-    $('.st-tarot-auto-m3').on('change', function() {
-        autoMode3 = $(this).is(':checked');
-        updateIndividualAutoModes();
-    });
-
-    $('.st-tarot-auto-mall').on('change', function() {
-        autoModeAll = $(this).is(':checked');
-        if (autoModeAll) {
-            autoMode1 = true;
-            autoMode2 = true;
-            autoMode3 = true;
-        } else {
-            autoMode1 = true;
-            autoMode2 = false;
-            autoMode3 = false;
-        }
-        saveAutoModes();
-        syncSettingsUI();
-    });
-
-    syncSettingsUI();
-    startNewSpread(1, false);
-});
